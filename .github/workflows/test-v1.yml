@@ -8,6 +8,10 @@ on:
 jobs:
   prepare_release:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        BOARD: [radxa-zero, rockpi-4a, rockpi-4b, rockpi-4c, rockpi-e, rockpi-s]
+        RELEASE: [buster]
     steps:
       - name: Get time
         id: time
@@ -34,12 +38,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Build image
         run: |
-          ./compile.sh  BOARD=radxa-zero BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img        
-          ./compile.sh  BOARD=rockpi-4a BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img
-          ./compile.sh  BOARD=rockpi-4b BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img
-          ./compile.sh  BOARD=rockpi-4c BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img        
-          ./compile.sh  BOARD=rockpi-e BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img
-          ./compile.sh  BOARD=rockpi-s BRANCH=current RELEASE=buster BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img
+          ./compile.sh  BOARD=${{ matrix.BOARD }} BRANCH=current RELEASE=${{ matrix.RELEASE }} BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img        
       - name: Upload image
         uses: xresloader/upload-to-github-release@v1
         env:
