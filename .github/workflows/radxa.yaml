@@ -32,8 +32,8 @@ jobs:
     strategy:
       matrix:
         BOARD: [rockpi-4b, rockpi-4c, rockpi-e]
-        RELEASE: [buster]
-        BUILD_DESKTOP: [no]
+        RELEASE: [focal]
+        BUILD_DESKTOP: [yes, no]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
