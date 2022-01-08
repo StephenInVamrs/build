@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
         BOARD: [radxa-zero, rockpi-4a, rockpi-4b, rockpi-4c, rockpi-e, rockpi-s]
-        RELEASE: [buster]
+        RELEASE: [buster, focal]
         BUILD_DESKTOP: [BUILD_DESKTOP=yes, BUILD_DESKTOP=no]
     steps:
       - name: Checkout
