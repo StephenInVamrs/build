@@ -1,4 +1,9 @@
 name: Build and release
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - test-v1
 
 jobs:
   prepare_release:
@@ -15,7 +20,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ steps.time.outputs.time }}
-          target_commitish: main
+          target_commitish: test-v1
           draft: false
     outputs:
       upload_url: ${{ steps.release.outputs.upload_url }}
