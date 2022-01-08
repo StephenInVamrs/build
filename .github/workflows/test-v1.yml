@@ -8,11 +8,6 @@ on:
 jobs:
   prepare_release:
     runs-on: ubuntu-latest
-    needs: prepare_release
-    strategy:
-      matrix:
-        BOARD: [radxa-zero, rockpi-4a, rockpi-4b, rockpi-4c, rockpi-e, rockpi-s]
-        RELEASE: [buster]
     steps:
       - name: Get time
         id: time
@@ -34,6 +29,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: prepare_release
+    strategy:
+      matrix:
+        BOARD: [radxa-zero, rockpi-4a, rockpi-4b, rockpi-4c, rockpi-e, rockpi-s]
+        RELEASE: [buster]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
