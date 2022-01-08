@@ -31,9 +31,9 @@ jobs:
     needs: prepare_release
     strategy:
       matrix:
-        BOARD: [radxa-zero, rockpi-4a, rockpi-4b, rockpi-4c, rockpi-e, rockpi-s]
-        RELEASE: [buster, focal]
-        BUILD_DESKTOP: [yes, no]
+        BOARD: [rockpi-4b, rockpi-4c, rockpi-e]
+        RELEASE: [buster]
+        BUILD_DESKTOP: [no]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
