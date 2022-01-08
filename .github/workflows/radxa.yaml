@@ -33,13 +33,12 @@ jobs:
       matrix:
         BOARD: [rockpi-4b, rockpi-4c, rockpi-e]
         RELEASE: [focal]
-        BUILD_DESKTOP_OR_MINIMAL: [BUILD_DESKTOP=yes, BUILD_MINIMAL=yes]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build image
         run: |
-          ./compile.sh  BOARD=${{ matrix.BOARD }} BRANCH=current RELEASE=${{ matrix.RELEASE }} ${{ matrix.BUILD_DESKTOP_OR_MINIMAL }} KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img
+          ./compile.sh  BOARD=${{ matrix.BOARD }} BRANCH=current RELEASE=${{ matrix.RELEASE }} BUILD_MINIMAL=yes BUILD_DESKTOP=no KERNEL_ONLY=no KERNEL_CONFIGURE=no COMPRESS_OUTPUTIMAGE=sha,gpg,img
       - name: Upload image
         uses: xresloader/upload-to-github-release@v1
         env:
