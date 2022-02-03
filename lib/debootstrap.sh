@@ -362,7 +362,7 @@ create_rootfs_cache()
 		[[ ${EVALPIPE[0]} -ne 0 ]] && exit_with_error "Purging of residual Armbian packages failed"
 
 		# stage: remove downloaded packages
-		chroot $SDCARD /bin/bash -c "apt-get clean"
+		chroot $SDCARD /bin/bash -c "apt-get -y autoremove; apt-get clean"
 
 		# DEBUG: print free space
 		local freespace=$(LC_ALL=C df -h)
@@ -391,7 +391,7 @@ create_rootfs_cache()
 		umount_chroot "$SDCARD"
 
 		tar cp --xattrs --directory=$SDCARD/ --exclude='./dev/*' --exclude='./proc/*' --exclude='./run/*' --exclude='./tmp/*' \
-			--exclude='./sys/*' . | pv -p -b -r -s $(du -sb $SDCARD/ | cut -f1) -N "$display_name" | lz4 -5 -c > $cache_fname
+			--exclude='./sys/*' --exclude='./home/*' --exclude='./root/*' . | pv -p -b -r -s $(du -sb $SDCARD/ | cut -f1) -N "$display_name" | lz4 -5 -c > $cache_fname
 
 		# sign rootfs cache archive that it can be used for web cache once. Internal purposes
 		if [[ -n "${GPG_PASS}" && "${SUDO_USER}" ]]; then
@@ -913,21 +913,6 @@ POST_UMOUNT_FINAL_IMAGE
 
 	mkdir -p $DESTIMG
 	mv ${SDCARD}.raw $DESTIMG/${version}.img
-
-	FINALDEST=$DEST/images
-	[[ "${BUILD_ALL}" == yes ]] && MAKE_FOLDERS="yes"
-
-	if [[ "${MAKE_FOLDERS}" == yes ]]; then
-		if [[ "$RC" == yes ]]; then
-			FINALDEST=$DEST/images/"${BOARD}"/RC
-		elif [[ "$BETA" == yes ]]; then
-			FINALDEST=$DEST/images/"${BOARD}"/nightly
-		else
-			FINALDEST=$DEST/images/"${BOARD}"/archive
-		fi
-		install -d ${FINALDEST}
-	fi
-
 
 	# custom post_build_image_modify hook to run before fingerprinting and compression
 	[[ $(type -t post_build_image_modify) == function ]] && display_alert "Custom Hook Detected" "post_build_image_modify" "info" && post_build_image_modify "${DESTIMG}/${version}.img"

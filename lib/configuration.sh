@@ -29,7 +29,7 @@ HOSTRELEASE=$(cat /etc/os-release | grep VERSION_CODENAME | cut -d"=" -f2)
 [[ -z $EXIT_PATCHING_ERROR ]] && EXIT_PATCHING_ERROR="" # exit patching if failed
 [[ -z $HOST ]] && HOST="$BOARD" # set hostname to the board
 cd "${SRC}" || exit
-[[ -z "${ROOTFSCACHE_VERSION}" ]] && ROOTFSCACHE_VERSION=12
+[[ -z "${ROOTFSCACHE_VERSION}" ]] && ROOTFSCACHE_VERSION=14
 [[ -z "${CHROOT_CACHE_VERSION}" ]] && CHROOT_CACHE_VERSION=7
 BUILD_REPOSITORY_URL=$(improved_git remote get-url $(improved_git remote 2>/dev/null | grep origin) 2>/dev/null)
 BUILD_REPOSITORY_COMMIT=$(improved_git describe --match=d_e_a_d_b_e_e_f --always --dirty 2>/dev/null)
@@ -44,6 +44,22 @@ else
 	REPO_STORAGE=$DEST/repository
 	REPO_CONFIG="aptly.conf"
 fi
+
+# image artefact destination with or without subfolder
+FINALDEST=$DEST/images
+if [[ "${MAKE_FOLDERS}" == yes ]]; then
+
+	if [[ "$RC" == yes ]]; then
+		FINALDEST=$DEST/images/"${BOARD}"/RC
+	elif [[ "$BETA" == yes ]]; then
+		FINALDEST=$DEST/images/"${BOARD}"/nightly
+	else
+		FINALDEST=$DEST/images/"${BOARD}"/archive
+	fi
+
+	install -d ${FINALDEST}
+fi
+
 
 # TODO: fixed name can't be used for parallel image building
 ROOT_MAPPER="armbian-root"
@@ -74,7 +90,7 @@ case $REGIONAL_MIRROR in
 	china)
 		[[ -z $USE_MAINLINE_GOOGLE_MIRROR ]] && [[ -z $MAINLINE_MIRROR ]] && MAINLINE_MIRROR=tuna
 		[[ -z $USE_GITHUB_UBOOT_MIRROR ]] && [[ -z $UBOOT_MIRROR ]] && UBOOT_MIRROR=gitee
-		[[ -z $GITHUB_MIRROR ]] && GITHUB_MIRROR=fastgit
+		[[ -z $GITHUB_MIRROR ]] && GITHUB_MIRROR=cnpmjs
 		[[ -z $DOWNLOAD_MIRROR ]] && DOWNLOAD_MIRROR=china
 		;;
 	*)
@@ -590,6 +606,10 @@ fi
 
 if [[ "${ARCH}" == "amd64" ]]; then
 	UBUNTU_MIRROR='archive.ubuntu.com/ubuntu' # ports are only for non-amd64, of course.
+
+		if [[ -n ${CUSTOM_UBUNTU_MIRROR} ]]; then # ubuntu redirector doesn't work well on amd64
+			UBUNTU_MIRROR="${CUSTOM_UBUNTU_MIRROR}"
+		fi
 fi
 
 # don't use mirrors that throws garbage on 404

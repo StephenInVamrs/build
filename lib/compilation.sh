@@ -588,7 +588,7 @@ compile_firmware()
 	plugin_dir="armbian-firmware${FULL}"
 	mkdir -p "${firmwaretempdir}/${plugin_dir}/lib/firmware"
 
-	fetch_from_repo "https://github.com/armbian/firmware" "armbian-firmware-git" "branch:master"
+	fetch_from_repo "$GITHUB_SOURCE/armbian/firmware" "armbian-firmware-git" "branch:master"
 	if [[ -n $FULL ]]; then
 		fetch_from_repo "$MAINLINE_FIRMWARE_SOURCE" "linux-firmware-git" "branch:main"
 		# cp : create hardlinks
@@ -640,8 +640,8 @@ compile_armbian-zsh()
 	armbian_zsh_dir=armbian-zsh_${REVISION}_all
 	display_alert "Building deb" "armbian-zsh" "info"
 
-	fetch_from_repo "https://github.com/robbyrussell/oh-my-zsh" "oh-my-zsh" "branch:master"
-	fetch_from_repo "https://github.com/mroth/evalcache" "evalcache" "branch:master"
+	fetch_from_repo "$GITHUB_SOURCE/robbyrussell/oh-my-zsh" "oh-my-zsh" "branch:master"
+	fetch_from_repo "$GITHUB_SOURCE/mroth/evalcache" "evalcache" "branch:master"
 
 	mkdir -p "${tmp_dir}/${armbian_zsh_dir}"/{DEBIAN,etc/skel/,etc/oh-my-zsh/,/etc/skel/.oh-my-zsh/cache}
 
@@ -719,9 +719,9 @@ compile_armbian-config()
 	armbian_config_dir=armbian-config_${REVISION}_all
 	display_alert "Building deb" "armbian-config" "info"
 
-	fetch_from_repo "https://github.com/armbian/config" "armbian-config" "branch:master"
-	fetch_from_repo "https://github.com/dylanaraps/neofetch" "neofetch" "tag:7.1.0"
-	fetch_from_repo "https://github.com/complexorganizations/wireguard-manager" "wireguard-manager" "tag:v1.0.0.10-26-2021"
+	fetch_from_repo "$GITHUB_SOURCE/armbian/config" "armbian-config" "branch:master"
+	fetch_from_repo "$GITHUB_SOURCE/dylanaraps/neofetch" "neofetch" "tag:7.1.0"
+	fetch_from_repo "$GITHUB_SOURCE/complexorganizations/wireguard-manager" "wireguard-manager" "tag:v1.0.0.10-26-2021"
 
 	mkdir -p "${tmp_dir}/${armbian_config_dir}"/{DEBIAN,usr/bin/,usr/sbin/,usr/lib/armbian-config/}
 
@@ -769,7 +769,7 @@ compile_armbian-config()
 compile_xilinx_bootgen()
 {
 	# Source code checkout
-	(fetch_from_repo "https://github.com/Xilinx/bootgen.git" "xilinx-bootgen" "branch:master")
+	(fetch_from_repo "$GITHUB_SOURCE/Xilinx/bootgen.git" "xilinx-bootgen" "branch:master")
 
 	pushd "${SRC}"/cache/sources/xilinx-bootgen || exit
 
@@ -954,8 +954,8 @@ apply_patch_series ()
 	local flag
 	local err_pt=$(mktemp /tmp/apply_patch_series_XXXXX)
 
-	list=$(gawk '$0 !~ /^#.*|^-.*|^$/' "${series}")
-	skiplist=$(gawk '$0 ~ /^-.*/' "${series}")
+	list=$(awk '$0 !~ /^#.*|^-.*|^$/' "${series}")
+	skiplist=$(awk '$0 ~ /^-.*/{print $NF}' "${series}")
 
 	display_alert "apply a series of " "[$(echo $list | wc -w)] patches"
 	display_alert "skip [$(echo $skiplist | wc -w)] patches"
@@ -974,19 +974,19 @@ apply_patch_series ()
 
 
 		case $flag in
-			0)	printf "%-72s [\033[32m done \033[0m]\n" "${p#*/}"
-				printf "%-72s [ done ]\n" "${p#*/}" >> "${DEST}"/debug/patching.log
+			0)	printf "%-77s [\033[32m done \033[0m]\n" "${p}"
+				printf "%-77s [ done ]\n" "${p}" >> "${DEST}"/debug/patching.log
 				;;
 			1)
-				printf "%-72s [\033[33m FAILED \033[0m]\n" "${p#*/}"
+				printf "%-77s [\033[33m FAILED \033[0m]\n" "${p}"
 				echo -e "For ${p} \t\tprocess exit [ $flag ]" >>"${DEST}"/debug/patching.log
 				cat $err_pt >>"${DEST}"/debug/patching.log
 				;;
 			2)
-				printf "%-72s [\033[31m Patch wrong \033[0m]\n" "${p#*/}"
+				printf "%-77s [\033[31m Patch wrong \033[0m]\n" "${p}"
 				echo -e "Patch wrong ${p}\t\tprocess exit [ $flag ]" >>"${DEST}"/debug/patching.log
 				cat $err_pt >>"${DEST}"/debug/patching.log
-			;;
+				;;
 		esac
 	done
 	rm $err_pt
@@ -1024,7 +1024,7 @@ userpatch_create()
 			read -e -p "Patch description: " -i "$COMMIT_MESSAGE" COMMIT_MESSAGE
 			[[ -z "$COMMIT_MESSAGE" ]] && COMMIT_MESSAGE="Patching something"
 			git commit -s -m "$COMMIT_MESSAGE"
-			git format-patch -1 HEAD --stdout --signature="Created with Armbian build tools https://github.com/armbian/build" > "${patch}"
+			git format-patch -1 HEAD --stdout --signature="Created with Armbian build tools $GITHUB_SOURCE/armbian/build" > "${patch}"
 			PATCHFILE=$(git format-patch -1 HEAD)
 			rm $PATCHFILE # delete the actual file
 			# create a symlink to have a nice name ready
